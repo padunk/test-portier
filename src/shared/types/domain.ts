@@ -49,6 +49,14 @@ export interface ConflictItem {
   resolvedAt?: string
 }
 
+export interface SyncEventChange {
+  fieldName: string
+  changeType: SyncChangeType
+  fromValue: string | null
+  toValue: string | null
+  resolution?: ConflictResolutionChoice
+}
+
 export interface SyncEvent {
   id: string
   integrationId: IntegrationId
@@ -58,6 +66,7 @@ export interface SyncEvent {
   summary: string
   changeCount: number
   actor: string
+  changes?: SyncEventChange[]
 }
 
 export interface User {

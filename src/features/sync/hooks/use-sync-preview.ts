@@ -20,8 +20,9 @@ export function useSyncPreview(integrationId: IntegrationId) {
     onSuccess: (preview) => {
       setPreview(preview)
     },
-    onError: () => {
-      markSyncError(integrationId)
+    onError: (error) => {
+      const { title } = getSyncErrorCopy(error)
+      markSyncError(integrationId, title)
     },
   })
 }
@@ -31,11 +32,13 @@ export function getSyncErrorCopy(error: unknown) {
     return {
       title: error.title,
       detail: error.detail,
+      status: error.status,
     }
   }
 
   return {
     title: 'Unable to load sync preview',
     detail: 'Please retry the request or inspect the integration configuration.',
+    status: undefined,
   }
 }

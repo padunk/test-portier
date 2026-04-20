@@ -42,8 +42,9 @@ export class SyncApiError extends Error {
     status: number,
     title: string,
     detail: string,
+    cause?: unknown,
   ) {
-    super(message)
+    super(message, cause === undefined ? undefined : { cause })
     this.status = status
     this.title = title
     this.detail = detail
@@ -53,9 +54,20 @@ export class SyncApiError extends Error {
 export async function fetchSyncPreview(
   applicationId: IntegrationId,
 ): Promise<SyncPreview> {
-  const response = await fetch(
-    `${SYNC_ENDPOINT}?application_id=${encodeURIComponent(applicationId)}`,
-  )
+  let response: Response
+  try {
+    response = await fetch(
+      `${SYNC_ENDPOINT}?application_id=${encodeURIComponent(applicationId)}`,
+    )
+  } catch (cause) {
+    throw new SyncApiError(
+      'Network request failed',
+      0,
+      'Cannot reach sync service',
+      'The browser could not reach the sync API. Check your connection and retry.',
+      cause,
+    )
+  }
 
   if (!response.ok) {
     const payload = await parseErrorResponse(response)
@@ -101,6 +113,31 @@ function createSyncApiError(
         payload.message ??
           'The sync request is missing required integration configuration.',
       )
+    case 401:
+    case 403:
+      return new SyncApiError(
+        message,
+        status,
+        'Integration not authorised',
+        payload.message ??
+          'Credentials for this integration are missing or have expired. Re-authenticate to continue.',
+      )
+    case 404:
+      return new SyncApiError(
+        message,
+        status,
+        'Integration not found',
+        payload.message ??
+          'The sync API has no record of this integration. Confirm the application id.',
+      )
+    case 429:
+      return new SyncApiError(
+        message,
+        status,
+        'Rate limit reached',
+        payload.message ??
+          'Too many sync requests have been issued recently. Wait a moment before retrying.',
+      )
     case 500:
       return new SyncApiError(
         message,
@@ -117,7 +154,34 @@ function createSyncApiError(
         payload.message ??
           'The upstream integration client is temporarily unavailable.',
       )
+    case 503:
+    case 504:
+      return new SyncApiError(
+        message,
+        status,
+        'Integration temporarily unavailable',
+        payload.message ??
+          'The provider is overloaded or unreachable. Retry the sync in a moment.',
+      )
     default:
+      if (status >= 400 && status < 500) {
+        return new SyncApiError(
+          message,
+          status,
+          'Sync request rejected',
+          payload.message ??
+            'The provider rejected the sync request. Verify the integration configuration.',
+        )
+      }
+      if (status >= 500) {
+        return new SyncApiError(
+          message,
+          status,
+          'Provider returned a server error',
+          payload.message ??
+            'The integration service failed unexpectedly. Please retry shortly.',
+        )
+      }
       return new SyncApiError(
         message,
         status,

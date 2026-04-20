@@ -69,6 +69,18 @@ Run tests:
 bun run test:run
 ```
 
+Lint:
+
+```bash
+bun run lint
+```
+
+Full quality gate (used before shipping):
+
+```bash
+bun run lint && bun run test:run && bun run build
+```
+
 ## Live sync preview API
 
 The `Sync Now` action is wired to:
@@ -81,8 +93,15 @@ Current scaffold assumptions:
 
 - API requires a query parameter named `application_id`
 - Supported IDs confirmed during setup: `slack`, `hubspot`, `salesforce`
-- `stripe` currently returns a `500` and is useful for error-state coverage
+- `stripe` currently returns a `500` and is wired in deliberately to exercise the error banner
 - Other product data remains mocked/local by design
+
+## Workflow
+
+1. Open an integration from the overview page.
+2. Click **Sync Now** to fetch the live preview. Added rows are auto-applied; updates and deletes surface in the conflict panel.
+3. For each conflict, choose the external value, keep the local value, or (for deletes) keep vs. delete the field.
+4. Click **Apply merge decisions** to merge the preview, clear conflicts, bump the version, and append a merge event to sync history with an expandable per-field change list.
 
 ## Docker
 

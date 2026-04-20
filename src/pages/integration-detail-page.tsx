@@ -20,32 +20,26 @@ import type {
 } from '../shared/types/domain'
 import { useSyncStore } from '../store/sync-store'
 
+const VALID_INTEGRATION_IDS: ReadonlyArray<IntegrationId> = [
+  'salesforce',
+  'hubspot',
+  'slack',
+  'stripe',
+]
 const EMPTY_CONFLICTS: ConflictItem[] = []
 const EMPTY_HISTORY: SyncEvent[] = []
 
+function isIntegrationId(value: string | undefined): value is IntegrationId {
+  return typeof value === 'string' && (VALID_INTEGRATION_IDS as readonly string[]).includes(value)
+}
+
 export function IntegrationDetailPage() {
-  const { integrationId } = useParams<{ integrationId: IntegrationId }>()
+  const { integrationId: rawIntegrationId } = useParams<{ integrationId: string }>()
+  const integrationId = isIntegrationId(rawIntegrationId) ? rawIntegrationId : undefined
 
   const integration = useSyncStore((state) =>
-    state.integrations.find((item) => item.id === integrationId),
+    integrationId ? state.integrations.find((item) => item.id === integrationId) : undefined,
   )
-  const preview = useSyncStore((state) =>
-    integrationId ? state.previews[integrationId] : undefined,
-  )
-  const conflicts = useSyncStore((state) =>
-    integrationId
-      ? (state.conflicts[integrationId] ?? EMPTY_CONFLICTS)
-      : EMPTY_CONFLICTS,
-  )
-  const history = useSyncStore((state) =>
-    integrationId
-      ? (state.history[integrationId] ?? EMPTY_HISTORY)
-      : EMPTY_HISTORY,
-  )
-  const chooseResolution = useSyncStore((state) => state.chooseResolution)
-  const applyResolutions = useSyncStore((state) => state.applyResolutions)
-
-  const mutation = useSyncPreview(integrationId ?? 'hubspot')
 
   if (!integration || !integrationId) {
     return (
@@ -62,6 +56,28 @@ export function IntegrationDetailPage() {
     )
   }
 
+  return <IntegrationDetailView integrationId={integrationId} />
+}
+
+interface IntegrationDetailViewProps {
+  integrationId: IntegrationId
+}
+
+function IntegrationDetailView({ integrationId }: IntegrationDetailViewProps) {
+  const integration = useSyncStore((state) =>
+    state.integrations.find((item) => item.id === integrationId),
+  )!
+  const preview = useSyncStore((state) => state.previews[integrationId])
+  const conflicts = useSyncStore(
+    (state) => state.conflicts[integrationId] ?? EMPTY_CONFLICTS,
+  )
+  const history = useSyncStore(
+    (state) => state.history[integrationId] ?? EMPTY_HISTORY,
+  )
+  const chooseResolution = useSyncStore((state) => state.chooseResolution)
+  const applyResolutions = useSyncStore((state) => state.applyResolutions)
+
+  const mutation = useSyncPreview(integrationId)
   const errorCopy = mutation.error ? getSyncErrorCopy(mutation.error) : null
 
   return (
@@ -103,7 +119,7 @@ export function IntegrationDetailPage() {
             </div>
             <div>
               <dt>Entity coverage</dt>
-              <dd>{integration.entityCoverage.join(", ")}</dd>
+              <dd>{integration.entityCoverage.join(', ')}</dd>
             </div>
             <div>
               <dt>Pending conflicts</dt>
@@ -113,14 +129,20 @@ export function IntegrationDetailPage() {
         </Card>
 
         {errorCopy ? (
-          <SyncErrorBanner title={errorCopy.title} detail={errorCopy.detail} />
+          <SyncErrorBanner
+            title={errorCopy.title}
+            detail={errorCopy.detail}
+            status={errorCopy.status}
+          />
         ) : null}
 
         <SyncPreviewPanel
           preview={preview}
           isLoading={mutation.isPending}
           onSyncNow={() => {
-            void mutation.mutateAsync()
+            void mutation.mutateAsync().catch(() => {
+              // Error state is surfaced via mutation.error / SyncErrorBanner.
+            })
           }}
         />
 

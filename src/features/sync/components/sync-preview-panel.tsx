@@ -30,10 +30,17 @@ export function SyncPreviewPanel({
             className="button button--primary"
             onClick={onSyncNow}
             type="button"
-            aria-label="Fetch live sync preview"
+            disabled={isLoading}
+            aria-busy={isLoading ? 'true' : undefined}
+            aria-label={isLoading ? 'Fetching live sync preview' : 'Fetch live sync preview'}
           >
-            <RefreshCcw size={16} aria-hidden="true" focusable="false" />
-            Sync Now
+            <RefreshCcw
+              size={16}
+              className={isLoading ? 'spin' : undefined}
+              aria-hidden="true"
+              focusable="false"
+            />
+            {isLoading ? 'Syncing…' : 'Sync Now'}
           </button>
         }
       />

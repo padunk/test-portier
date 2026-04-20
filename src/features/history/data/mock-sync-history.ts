@@ -38,8 +38,24 @@ export const mockSyncHistory: SyncEvent[] = [
     timestamp: '2026-04-20T05:55:00Z',
     version: 'v3.12.7',
     summary: 'User profile updates were approved and published to Slack.',
-    changeCount: 10,
+    changeCount: 2,
     actor: 'Manual reviewer',
+    changes: [
+      {
+        fieldName: 'user.email',
+        changeType: 'UPDATE',
+        fromValue: 'evan.temp@company.com',
+        toValue: 'evan@company.com',
+        resolution: 'external',
+      },
+      {
+        fieldName: 'user.role',
+        changeType: 'UPDATE',
+        fromValue: 'member',
+        toValue: 'admin',
+        resolution: 'external',
+      },
+    ],
   },
   {
     id: 'evt_stripe_01',
