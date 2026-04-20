@@ -1,0 +1,48 @@
+import type { Integration } from '../../../shared/types/domain'
+
+export const mockIntegrations: Integration[] = [
+  {
+    id: 'salesforce',
+    name: 'Salesforce',
+    category: 'CRM',
+    status: 'syncing',
+    description: 'Customer records and account ownership sync.',
+    lastSyncAt: '2026-04-20T06:35:00Z',
+    version: 'v4.18.2',
+    entityCoverage: ['User', 'Key'],
+    pendingConflicts: 0,
+  },
+  {
+    id: 'hubspot',
+    name: 'HubSpot',
+    category: 'Marketing',
+    status: 'conflict',
+    description: 'Lead enrichment and contact lifecycle updates.',
+    lastSyncAt: '2026-04-20T07:42:00Z',
+    version: 'v5.0.1',
+    entityCoverage: ['User', 'Key'],
+    pendingConflicts: 4,
+  },
+  {
+    id: 'slack',
+    name: 'Slack',
+    category: 'Workspace',
+    status: 'synced',
+    description: 'User profile sync and workspace access changes.',
+    lastSyncAt: '2026-04-20T05:55:00Z',
+    version: 'v3.12.7',
+    entityCoverage: ['User'],
+    pendingConflicts: 0,
+  },
+  {
+    id: 'stripe',
+    name: 'Stripe',
+    category: 'Billing',
+    status: 'error',
+    description: 'Subscription lifecycle sync and payment status tracking.',
+    lastSyncAt: '2026-04-20T03:10:00Z',
+    version: 'v2.8.4',
+    entityCoverage: ['User', 'Key'],
+    pendingConflicts: 0,
+  },
+]
