@@ -35,6 +35,16 @@ export function formatFieldName(fieldName: string) {
   return `${capitalize(entity)} • ${field.replaceAll('_', ' ')}`
 }
 
+export function extractEntityContext(changes: { fieldName: string, currentValue?: string | null, newValue?: string | null }[], fieldName: string) {
+  const entityType = fieldName.split('.')[0]
+  if (!entityType) return 'Unknown Entity'
+  
+  const idChange = changes.find(c => c.fieldName === `${entityType}.id`)
+  const id = idChange?.newValue || idChange?.currentValue
+  
+  return id ? `${capitalize(entityType)} (${id})` : capitalize(entityType)
+}
+
 export function formatValue(value: string | null) {
   return value ?? '—'
 }

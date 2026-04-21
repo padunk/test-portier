@@ -63,7 +63,12 @@ export function ConflictResolutionPanel({
           return (
             <li key={conflict.id} className="list-row list-row--conflict">
               <div className="list-row__title-row">
-                <strong>{formatFieldName(conflict.fieldName)}</strong>
+                <div>
+                  <strong>{formatFieldName(conflict.fieldName)}</strong>
+                  <span style={{ fontSize: '0.875rem', color: 'var(--color-fg-subtle)', marginLeft: '0.5rem' }}>
+                    {conflict.entityContext}
+                  </span>
+                </div>
                 <span className="muted-text">{conflict.changeType}</span>
               </div>
 

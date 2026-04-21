@@ -45,6 +45,7 @@ export interface ConflictItem {
   changeType: SyncChangeType
   localValue: string | null
   externalValue: string | null
+  entityContext?: string
   resolution?: ConflictResolutionChoice
   resolvedAt?: string
 }

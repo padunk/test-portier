@@ -1,4 +1,5 @@
 import type { ConflictItem, SyncPreview } from '../../../shared/types/domain'
+import { extractEntityContext } from '../../../shared/lib/format'
 
 export function deriveConflictsFromPreview(preview: SyncPreview): ConflictItem[] {
   return preview.changes
@@ -11,5 +12,6 @@ export function deriveConflictsFromPreview(preview: SyncPreview): ConflictItem[]
       changeType: change.changeType,
       localValue: change.currentValue,
       externalValue: change.newValue,
+      entityContext: extractEntityContext(preview.changes, change.fieldName),
     }))
 }

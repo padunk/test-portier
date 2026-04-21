@@ -1,5 +1,6 @@
 import { ChevronRight, RefreshCcw } from 'lucide-react'
 import {
+  extractEntityContext,
   formatDateTime,
   formatFieldName,
   formatValue,
@@ -83,6 +84,9 @@ export function SyncPreviewPanel({
             <div>
               <div className="list-row__title-row">
                 <strong>{formatFieldName(change.fieldName)}</strong>
+                <span style={{ fontSize: '0.875rem', color: 'var(--color-fg-subtle)', marginLeft: '0.5rem' }}>
+                  {extractEntityContext(preview.changes, change.fieldName)}
+                </span>
                 <Badge tone="outline" ariaLabel={`Change type: ${change.changeType}`}>
                   {change.changeType}
                 </Badge>

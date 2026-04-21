@@ -122,6 +122,8 @@ function buildMergedPreview(
   }
 }
 
+import { useMockDb } from './mock-db'
+
 function summariseApply(applied: SyncEventChange[]) {
   const acceptedExternal = applied.filter((change) => change.resolution === 'external').length
   const keptLocal = applied.filter((change) => change.resolution === 'local').length
@@ -250,6 +252,14 @@ export const useSyncStore = create<SyncWorkspaceState>((set) => ({
         preview,
         existingConflicts,
         appliedAt,
+      )
+
+      useMockDb.getState().applyChanges(
+        appliedChanges.map((change) => ({
+          fieldName: change.fieldName,
+          changeType: change.changeType,
+          newValue: change.toValue,
+        }))
       )
 
       const integrations = updateIntegration(
