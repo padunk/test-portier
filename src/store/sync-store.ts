@@ -12,6 +12,7 @@ import type {
   SyncPreview,
   ConflictResolutionChoice,
 } from '../shared/types/domain'
+import { useMockDb } from './mock-db'
 
 type PreviewRecord = Partial<Record<IntegrationId, SyncPreview>>
 type ConflictRecord = Partial<Record<IntegrationId, ConflictItem[]>>
@@ -29,6 +30,7 @@ interface SyncWorkspaceState {
     integrationId: IntegrationId,
     conflictId: string,
     resolution: ConflictResolutionChoice,
+    mergedValue?: string | null,
   ) => void
   applyResolutions: (integrationId: IntegrationId) => void
 }
@@ -68,19 +70,25 @@ function buildMergedPreview(
   conflicts: ConflictItem[],
   appliedAt: string,
 ): { preview: SyncPreview; appliedChanges: SyncEventChange[] } {
-  const resolutionByChangeId = new Map<string, ConflictResolutionChoice>()
+  const resolutionByChangeId = new Map<
+    string,
+    { choice: ConflictResolutionChoice; mergedValue?: string | null }
+  >()
   for (const conflict of conflicts) {
     if (conflict.resolution) {
-      resolutionByChangeId.set(conflict.changeId, conflict.resolution)
+      resolutionByChangeId.set(conflict.changeId, {
+        choice: conflict.resolution,
+        mergedValue: conflict.mergedValue,
+      })
     }
   }
 
   const appliedChanges: SyncEventChange[] = []
   const remainingChanges = preview.changes.flatMap((change) => {
-    const resolution = resolutionByChangeId.get(change.id)
+    const resolved = resolutionByChangeId.get(change.id)
 
     // Non-conflict changes (ADD) always apply.
-    if (!resolution) {
+    if (!resolved) {
       appliedChanges.push({
         fieldName: change.fieldName,
         changeType: change.changeType,
@@ -90,13 +98,24 @@ function buildMergedPreview(
       return []
     }
 
-    if (resolution === 'external') {
+    if (resolved.choice === 'external') {
       appliedChanges.push({
         fieldName: change.fieldName,
         changeType: change.changeType,
         fromValue: change.currentValue,
         toValue: change.newValue,
-        resolution,
+        resolution: resolved.choice,
+      })
+      return []
+    }
+
+    if (resolved.choice === 'merge') {
+      appliedChanges.push({
+        fieldName: change.fieldName,
+        changeType: change.changeType,
+        fromValue: change.currentValue,
+        toValue: resolved.mergedValue ?? null,
+        resolution: resolved.choice,
       })
       return []
     }
@@ -107,7 +126,7 @@ function buildMergedPreview(
       changeType: change.changeType,
       fromValue: change.currentValue,
       toValue: change.currentValue,
-      resolution,
+      resolution: resolved.choice,
     })
     return []
   })
@@ -122,17 +141,17 @@ function buildMergedPreview(
   }
 }
 
-import { useMockDb } from './mock-db'
-
 function summariseApply(applied: SyncEventChange[]) {
   const acceptedExternal = applied.filter((change) => change.resolution === 'external').length
   const keptLocal = applied.filter((change) => change.resolution === 'local').length
+  const merged = applied.filter((change) => change.resolution === 'merge').length
   const autoApplied = applied.filter((change) => !change.resolution).length
 
   const parts: string[] = []
   if (autoApplied > 0) parts.push(`${autoApplied} auto-applied`)
   if (acceptedExternal > 0) parts.push(`${acceptedExternal} resolved to external`)
   if (keptLocal > 0) parts.push(`${keptLocal} kept local`)
+  if (merged > 0) parts.push(`${merged} merged manually`)
 
   return parts.length > 0
     ? `Merged sync run: ${parts.join(', ')}.`
@@ -226,12 +245,21 @@ export const useSyncStore = create<SyncWorkspaceState>((set) => ({
         },
       }
     }),
-  chooseResolution: (integrationId, conflictId, resolution) =>
+  chooseResolution: (integrationId, conflictId, resolution, mergedValue) =>
     set((state) => ({
       conflicts: {
         ...state.conflicts,
         [integrationId]: (state.conflicts[integrationId] ?? []).map((conflict) =>
-          conflict.id === conflictId ? { ...conflict, resolution } : conflict,
+          conflict.id === conflictId
+            ? {
+                ...conflict,
+                resolution,
+                mergedValue:
+                  resolution === 'merge'
+                    ? (mergedValue ?? conflict.mergedValue ?? conflict.externalValue)
+                    : undefined,
+              }
+            : conflict,
         ),
       },
     })),

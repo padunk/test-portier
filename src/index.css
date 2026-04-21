@@ -456,6 +456,53 @@ code {
     background: linear-gradient(135deg, #4f46e5, #7c3aed);
 }
 
+.button--ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: inherit;
+}
+
+.error-boundary {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 2rem;
+    background: var(--surface-muted, #f8fafc);
+}
+
+.error-boundary__inner {
+    max-width: 540px;
+    background: var(--surface, white);
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 20px;
+    padding: 2rem;
+    display: grid;
+    gap: 1rem;
+}
+
+.error-boundary__eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    color: #b91c1c;
+    margin: 0;
+}
+
+.error-boundary details pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: var(--surface-muted, #f1f5f9);
+    padding: 0.75rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+}
+
+.error-boundary__actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
 .empty-state {
     place-items: start;
 }
@@ -521,6 +568,51 @@ code {
 .decision-card--selected {
     border-color: rgba(79, 70, 229, 0.45);
     background: rgba(79, 70, 229, 0.08);
+}
+
+.entity-context {
+    font-size: 0.875rem;
+    color: var(--color-fg-subtle, #64748b);
+    margin-left: 0.5rem;
+}
+
+.decision-merge {
+    margin-top: 0.85rem;
+    display: grid;
+    gap: 0.4rem;
+}
+
+.decision-merge label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-fg-subtle, #64748b);
+}
+
+.decision-merge__row {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.decision-merge__input {
+    flex: 1 1 240px;
+    min-width: 0;
+    padding: 0.6rem 0.75rem;
+    border-radius: 12px;
+    border: 1px solid var(--border, #e2e8f0);
+    background: var(--surface, white);
+    font: inherit;
+    color: inherit;
+}
+
+.decision-merge__input:focus-visible {
+    outline: 2px solid rgba(79, 70, 229, 0.55);
+    outline-offset: 1px;
+}
+
+.decision-merge__input--selected {
+    border-color: rgba(79, 70, 229, 0.55);
+    background: rgba(79, 70, 229, 0.06);
 }
 
 .sr-only {

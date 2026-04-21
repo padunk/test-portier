@@ -148,8 +148,8 @@ function IntegrationDetailView({ integrationId }: IntegrationDetailViewProps) {
 
         <ConflictResolutionPanel
           conflicts={conflicts}
-          onChooseResolution={(conflictId, resolution) =>
-            chooseResolution(integrationId, conflictId, resolution)
+          onChooseResolution={(conflictId, resolution, mergedValue) =>
+            chooseResolution(integrationId, conflictId, resolution, mergedValue)
           }
           onApply={() => applyResolutions(integrationId)}
         />

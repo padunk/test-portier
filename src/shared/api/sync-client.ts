@@ -74,7 +74,30 @@ export async function fetchSyncPreview(
     throw createSyncApiError(response.status, payload)
   }
 
-  const payload = syncResponseSchema.parse(await response.json())
+  let rawJson: unknown
+  try {
+    rawJson = await response.json()
+  } catch (cause) {
+    throw new SyncApiError(
+      'Sync response was not valid JSON',
+      response.status,
+      'Unexpected sync response',
+      'The sync API returned a response we could not parse. Please retry shortly.',
+      cause,
+    )
+  }
+
+  const parsed = syncResponseSchema.safeParse(rawJson)
+  if (!parsed.success) {
+    throw new SyncApiError(
+      'Sync response failed schema validation',
+      response.status,
+      'Unexpected sync response shape',
+      'The sync API returned data in an unexpected format. Please retry or contact support if it persists.',
+      parsed.error,
+    )
+  }
+  const payload = parsed.data
 
   return {
     integrationId: applicationId,

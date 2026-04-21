@@ -84,7 +84,7 @@ export function SyncPreviewPanel({
             <div>
               <div className="list-row__title-row">
                 <strong>{formatFieldName(change.fieldName)}</strong>
-                <span style={{ fontSize: '0.875rem', color: 'var(--color-fg-subtle)', marginLeft: '0.5rem' }}>
+                <span className="entity-context">
                   {extractEntityContext(preview.changes, change.fieldName)}
                 </span>
                 <Badge tone="outline" ariaLabel={`Change type: ${change.changeType}`}>

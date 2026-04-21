@@ -4,7 +4,7 @@ export type IntegrationStatus = 'synced' | 'syncing' | 'conflict' | 'error'
 
 export type SyncChangeType = 'ADD' | 'UPDATE' | 'DELETE'
 
-export type ConflictResolutionChoice = 'local' | 'external'
+export type ConflictResolutionChoice = 'local' | 'external' | 'merge'
 
 export type DomainEntity = 'User' | 'Door' | 'Key'
 
@@ -47,6 +47,7 @@ export interface ConflictItem {
   externalValue: string | null
   entityContext?: string
   resolution?: ConflictResolutionChoice
+  mergedValue?: string | null
   resolvedAt?: string
 }
 
